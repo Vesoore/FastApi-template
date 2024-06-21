@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      dockerfile: app/Dockerfile
+    restart: always
+    command: /bin/sh -c "start.sh"
+    env_file:
+      - app/prod.env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+
+  postgres:
+    image: postgres:15-alpine
+    restart: always
+    env_file:
+      - app/prod.env
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+  #    healthcheck:
+  #      test: [ "CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'" ]
+  #      interval: 10s
+  #      timeout: 3s
+  #      retries: 3
+
+  redis:
+    image: redis:latest
+    restart: always
+    env_file:
+      - app/prod.env
+    ports:
+      - "6379:6379"
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+
+volumes:
+  postgres-data:

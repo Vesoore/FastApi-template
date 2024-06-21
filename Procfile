@@ -1,0 +1,1 @@
+web: sh -c "alembic upgrade head && cd app && uvicorn app.__main__:app --host=0.0.0.0 --port=${PORT}"
